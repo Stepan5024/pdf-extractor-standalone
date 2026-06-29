@@ -81,6 +81,12 @@ java -jar dist/pdf-extractor-standalone.jar /path/to/file.pdf --file-format md
 scripts\extract-pdf.cmd C:\path\to\file.pdf --file-format md
 ```
 
+PowerShell:
+
+```powershell
+.\scripts\extract-pdf.ps1 C:\path\to\file.pdf --file-format md
+```
+
 Плюсы:
 
 - Maven не нужен
@@ -186,6 +192,7 @@ java -jar target/pdf-extractor-standalone-1.0.0.jar /path/to/file.pdf --file-for
 - `dist/pdf-extractor-standalone.jar`
 - `scripts/extract-pdf.sh`
 - `scripts/extract-pdf.cmd`
+- `scripts/extract-pdf.ps1`
 
 ### Вариант B. Можно передать только текст
 
@@ -241,5 +248,29 @@ maven-shade-plugin ... 401 Unauthorized
 Хуже всего извлекаются:
 
 - журнальная верстка с несколькими колонками
+
+## Запуск из IntelliJ IDEA
+
+Если на рабочем ноуте Maven умеет скачать зависимости, можно запускать проект прямо из IDE.
+
+Что открыть:
+
+- `pom.xml` этого проекта
+
+Какой класс запускать:
+
+- `io.github.stepanbokarev.pdfextractor.PdfExtractorApplication`
+
+Пример `Program arguments`:
+
+```text
+C:\path\to\file.pdf --file-format md --output-file C:\path\to\file.md --ocr-mode auto
+```
+
+Если нужен `txt`:
+
+```text
+C:\path\to\file.pdf --file-format txt --output-file C:\path\to\file.txt --ocr-mode auto
+```
 - сложные инфографики
 - визуальные блоки, где текст является частью дизайна страницы
