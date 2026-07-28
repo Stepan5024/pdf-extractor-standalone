@@ -6,7 +6,7 @@
 
     <groupId>io.github.stepanbokarev</groupId>
     <artifactId>pdf-extractor-standalone</artifactId>
-    <version>1.0.0</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
 
     <name>PDF Extractor Standalone</name>
@@ -18,8 +18,11 @@
         <junit.version>5.13.4</junit.version>
         <assertj.version>3.27.6</assertj.version>
         <pdfbox.version>2.0.35</pdfbox.version>
+        <jai-imageio.version>1.4.0</jai-imageio.version>
         <tess4j.version>5.19.0</tess4j.version>
-        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
+        <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
     </properties>
 
     <dependencies>
@@ -27,6 +30,16 @@
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jai-imageio</groupId>
+            <artifactId>jai-imageio-core</artifactId>
+            <version>${jai-imageio.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jai-imageio</groupId>
+            <artifactId>jai-imageio-jpeg2000</artifactId>
+            <version>${jai-imageio.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
@@ -60,7 +73,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
                 </configuration>
@@ -68,7 +81,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
+                <version>${maven-jar-plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -82,6 +95,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <argLine>-Djava.awt.headless=true</argLine>
                     <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
@@ -109,6 +123,7 @@
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>io.github.stepanbokarev.pdfextractor.PdfExtractorApplication</mainClass>
                                         </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                     </transformers>
                                     <filters>
                                         <filter>

@@ -36,16 +36,41 @@
 - Java 17+ для сборки и запуска
 - Maven 3.9+ или `mvnw` / `mvnw.cmd`
 
+## Режимы запуска
+
+Приложение умеет три сценария:
+
+1. Один PDF -> один `md` или `txt`
+2. Папка с PDF -> один общий `md` bundle
+3. Один bundle `md` -> набор составных `md` файлов
+
+Можно запускать как старый single-file режим без subcommand:
+
+```bash
+java -jar dist/pdf-extractor-standalone.jar /path/to/file.pdf --file-format md
+```
+
+или через явные subcommand:
+
+```bash
+java -jar dist/pdf-extractor-standalone.jar extract /path/to/file.pdf --file-format md
+java -jar dist/pdf-extractor-standalone.jar combine /path/to/pdf-folder --output-file /path/to/combined.md
+java -jar dist/pdf-extractor-standalone.jar split /path/to/combined.md --output-dir /path/to/restored
+```
+
+Если запустить без аргументов, откроется простое меню выбора из 3 режимов.
+
 ## Схемы работы
 
 ## GitHub Release
 
-В этом репозитории jar можно брать двумя путями:
+В публичном репозитории `Stepan5024/pdf-extractor-standalone` основной сценарий такой:
 
-- скачать `dist/pdf-extractor-standalone.jar`, если он уже лежит в репозитории
-- скачать релизный asset `pdf-extractor-standalone.jar` со страницы Releases
+- скачать `pdf-extractor-standalone.jar` со страницы Releases
+- положить jar в `dist/pdf-extractor-standalone.jar`
+- запускать через `scripts/extract-pdf.cmd` или `scripts/extract-pdf.ps1` на Windows
 
-Для корпоративного ноутбука основной путь такой:
+Минимальный набор для корпоративного ноутбука:
 
 ```text
 pdf-extractor-standalone\
@@ -53,12 +78,7 @@ pdf-extractor-standalone\
     pdf-extractor-standalone.jar
   scripts\
     extract-pdf.cmd
-```
-
-И запуск:
-
-```bat
-scripts\extract-pdf.cmd C:\path\to\file.pdf --file-format md
+    extract-pdf.ps1
 ```
 
 ### Схема 1. Готовый jar без Maven
@@ -128,7 +148,7 @@ mvnw.cmd package
 Результат:
 
 ```text
-target/pdf-extractor-standalone-1.0.0.jar
+target/pdf-extractor-standalone-3.0.1.jar
 ```
 
 Это thin jar. Его надо запускать через скрипты:
@@ -158,13 +178,13 @@ mvn -Pfat-jar package
 Результат:
 
 ```text
-target/pdf-extractor-standalone-1.0.0.jar
+target/pdf-extractor-standalone-3.0.1.jar
 ```
 
 После этого можно запускать его напрямую:
 
 ```bash
-java -jar target/pdf-extractor-standalone-1.0.0.jar /path/to/file.pdf --file-format md
+java -jar target/pdf-extractor-standalone-3.0.1.jar /path/to/file.pdf --file-format md
 ```
 
 ## Опции запуска
@@ -175,6 +195,52 @@ java -jar target/pdf-extractor-standalone-1.0.0.jar /path/to/file.pdf --file-for
 - `--ocr-language <expr>` например `eng+rus`
 - `--ocr-dpi <number>`
 - `--help`
+
+### Режим 1. Один PDF
+
+Примеры:
+
+```bash
+java -jar dist/pdf-extractor-standalone.jar extract /path/to/file.pdf --file-format md
+```
+
+```powershell
+.\scripts\extract-pdf.ps1 C:\path\to\file.pdf --file-format md
+```
+
+### Режим 2. Папка PDF -> один bundle markdown
+
+Этот режим рекурсивно обходит обычную папку, не `git`-репозиторий, и собирает все найденные `*.pdf` в один markdown bundle.
+
+Пример:
+
+```bash
+java -jar dist/pdf-extractor-standalone.jar combine /path/to/pdf-folder --output-file /path/to/combined.md
+```
+
+```powershell
+.\scripts\extract-pdf.ps1 combine C:\path\to\pdf-folder --output-file C:\path\to\combined.md
+```
+
+Что внутри bundle:
+
+- для каждого PDF создается отдельный markdown-блок
+- относительный путь сохраняется как `PATH: subdir/file.md`
+- формат совместим с логикой `FileCombiner.java` / `UnZip.java`
+
+### Режим 3. Bundle markdown -> набор markdown файлов
+
+Этот режим берет один общий bundle-файл и восстанавливает из него составные `md` файлы.
+
+Пример:
+
+```bash
+java -jar dist/pdf-extractor-standalone.jar split /path/to/combined.md --output-dir /path/to/restored
+```
+
+```powershell
+.\scripts\extract-pdf.ps1 split C:\path\to\combined.md --output-dir C:\path\to\restored
+```
 
 ## Поведение OCR
 
@@ -232,6 +298,8 @@ maven-shade-plugin ... 401 Unauthorized
 Что отдельно проверить в корпоративном репозитории:
 
 - `org.apache.pdfbox:pdfbox:2.0.35`
+- `com.github.jai-imageio:jai-imageio-core:1.4.0`
+- `com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0`
 - `net.sourceforge.tess4j:tess4j:5.19.0`
 - `net.sourceforge.lept4j:lept4j:1.24.0`
 - transitives для `tess4j`

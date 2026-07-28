@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootDir = Split-Path -Parent $scriptDir
 $distJarPath = Join-Path $rootDir 'dist/pdf-extractor-standalone.jar'
-$targetJarPath = Join-Path $rootDir 'target/pdf-extractor-standalone-1.0.0.jar'
+$targetJarPath = Join-Path $rootDir 'target/pdf-extractor-standalone-3.0.1.jar'
 
 if ($env:M2_REPO) {
     $m2 = $env:M2_REPO
@@ -20,7 +20,7 @@ if ($env:M2_REPO) {
 }
 
 if (Test-Path $distJarPath) {
-    & java -jar $distJarPath @Arguments
+    & java '-Djava.awt.headless=true' -jar $distJarPath @Arguments
     exit $LASTEXITCODE
 }
 
@@ -33,6 +33,7 @@ if (Test-Path $targetJarPath) {
         (Join-Path $m2 'net/sourceforge/tess4j/tess4j/5.19.0/tess4j-5.19.0.jar'),
         (Join-Path $m2 'net/java/dev/jna/jna/5.18.1/jna-5.18.1.jar'),
         (Join-Path $m2 'com/github/jai-imageio/jai-imageio-core/1.4.0/jai-imageio-core-1.4.0.jar'),
+        (Join-Path $m2 'com/github/jai-imageio/jai-imageio-jpeg2000/1.4.0/jai-imageio-jpeg2000-1.4.0.jar'),
         (Join-Path $m2 'org/apache/pdfbox/pdfbox-tools/3.0.7/pdfbox-tools-3.0.7.jar'),
         (Join-Path $m2 'org/apache/pdfbox/pdfbox-debugger/3.0.7/pdfbox-debugger-3.0.7.jar'),
         (Join-Path $m2 'org/bouncycastle/bcpkix-jdk18on/1.83/bcpkix-jdk18on-1.83.jar'),
@@ -48,7 +49,7 @@ if (Test-Path $targetJarPath) {
     )
 
     $classpath = [string]::Join([IO.Path]::PathSeparator, $cpEntries)
-    & java -cp $classpath io.github.stepanbokarev.pdfextractor.PdfExtractorApplication @Arguments
+    & java '-Djava.awt.headless=true' -cp $classpath io.github.stepanbokarev.pdfextractor.PdfExtractorApplication @Arguments
     exit $LASTEXITCODE
 }
 
