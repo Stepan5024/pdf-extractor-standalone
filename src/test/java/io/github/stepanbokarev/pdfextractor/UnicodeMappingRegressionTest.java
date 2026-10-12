@@ -73,6 +73,7 @@ class UnicodeMappingRegressionTest {
   void combinesFolderWithRecoveredUnicodeText() throws Exception {
     Path folder = Files.createDirectories(tempDir.resolve("pdfs"));
     UnmappedGlyphFixture.create(folder.resolve("unmapped.pdf"));
+    UnmappedGlyphFixture.create(folder.resolve("second.pdf"));
     Path output = tempDir.resolve("combined.md");
     ByteArrayOutputStream errors = new ByteArrayOutputStream();
     int exitCode =
@@ -89,7 +90,7 @@ class UnicodeMappingRegressionTest {
                 });
     assertThat(exitCode).as(errors.toString(StandardCharsets.UTF_8)).isZero();
     assertThat(Files.readString(output))
-        .contains("PATH: unmapped.md", UnmappedGlyphFixture.VISIBLE_TEXT);
+        .contains("PATH: unmapped.md", "PATH: second.md", UnmappedGlyphFixture.VISIBLE_TEXT);
   }
 
   private Path createInput() throws Exception {
