@@ -111,10 +111,7 @@ class PdfExtractorApplicationTest {
         new PdfExtractorApplication(new PrintStream(splitOut), new PrintStream(splitErr))
             .run(
                 new String[] {
-                  "split",
-                  combinedMarkdown.toString(),
-                  "--output-dir",
-                  restoredDir.toString()
+                  "split", combinedMarkdown.toString(), "--output-dir", restoredDir.toString()
                 });
 
     assertThat(splitExitCode).isZero();

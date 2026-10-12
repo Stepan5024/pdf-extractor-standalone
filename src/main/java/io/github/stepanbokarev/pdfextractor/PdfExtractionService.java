@@ -273,7 +273,8 @@ final class PdfExtractionService {
     if (Math.abs(current.left() - next.left()) > Math.max(10.0d, bodyFont * 0.8d)) {
       return true;
     }
-    return current.width() < pageWidth * 0.58d && endsWithStrongSentenceBoundary(current.plainText());
+    return current.width() < pageWidth * 0.58d
+        && endsWithStrongSentenceBoundary(current.plainText());
   }
 
   private static void flushParagraph(StringBuilder rendered, StringBuilder paragraph) {
@@ -458,7 +459,8 @@ final class PdfExtractionService {
         index = tableSpan.endExclusive();
         continue;
       }
-      ColumnCardSpan columnCards = detectColumnCards(segmentedRows, index, page.getMediaBox().getWidth());
+      ColumnCardSpan columnCards =
+          detectColumnCards(segmentedRows, index, page.getMediaBox().getWidth());
       if (columnCards != null) {
         seededBlocks.addAll(columnCards.blocks());
         index = columnCards.endExclusive();
@@ -507,7 +509,9 @@ final class PdfExtractionService {
   }
 
   private static List<List<LineData>> segmentRows(
-      List<List<TextFragment>> rawLines, Map<TextFragment, String> linksByFragment, PDRectangle pageBox) {
+      List<List<TextFragment>> rawLines,
+      Map<TextFragment, String> linksByFragment,
+      PDRectangle pageBox) {
     List<List<LineData>> segmentedRows = new ArrayList<>();
     double pageWidth = pageBox.getWidth();
     for (List<TextFragment> rawLine : rawLines) {
@@ -566,7 +570,8 @@ final class PdfExtractionService {
       return null;
     }
 
-    List<LineData> combinedRows = candidateRows.stream().map(rows -> combineSegments(rows, linksByFragment)).toList();
+    List<LineData> combinedRows =
+        candidateRows.stream().map(rows -> combineSegments(rows, linksByFragment)).toList();
     if (!shouldPreserveAsTable(combinedRows)) {
       return null;
     }
@@ -600,14 +605,16 @@ final class PdfExtractionService {
 
     int index = startIndex + 1;
     int matchedRowCount = 0;
-    double previousBottom = headerSegments.stream().mapToDouble(LineData::bottom).max().orElse(0.0d);
+    double previousBottom =
+        headerSegments.stream().mapToDouble(LineData::bottom).max().orElse(0.0d);
     while (index < segmentedRows.size()) {
       List<LineData> rowSegments = segmentedRows.get(index);
       if (rowSegments.isEmpty()) {
         break;
       }
       double rowTop = rowSegments.stream().mapToDouble(LineData::top).min().orElse(previousBottom);
-      double maxRowHeight = rowSegments.stream().mapToDouble(LineData::maxHeight).max().orElse(0.0d);
+      double maxRowHeight =
+          rowSegments.stream().mapToDouble(LineData::maxHeight).max().orElse(0.0d);
       if (rowTop - previousBottom > Math.max(26.0d, maxRowHeight * 2.2d)) {
         break;
       }
@@ -618,7 +625,8 @@ final class PdfExtractionService {
       for (int segmentIndex = 0; segmentIndex < rowSegments.size(); segmentIndex++) {
         columns.get(assignments.get(segmentIndex)).add(rowSegments.get(segmentIndex));
       }
-      previousBottom = rowSegments.stream().mapToDouble(LineData::bottom).max().orElse(previousBottom);
+      previousBottom =
+          rowSegments.stream().mapToDouble(LineData::bottom).max().orElse(previousBottom);
       matchedRowCount++;
       index++;
     }
@@ -657,7 +665,8 @@ final class PdfExtractionService {
         return null;
       }
       int columnIndex = 0;
-      while (columnIndex < boundaries.size() && rowSegment.centerX() > boundaries.get(columnIndex)) {
+      while (columnIndex < boundaries.size()
+          && rowSegment.centerX() > boundaries.get(columnIndex)) {
         columnIndex++;
       }
       if (columnIndex <= previousColumn) {
@@ -693,7 +702,9 @@ final class PdfExtractionService {
             consumeLeftContinuation(lines, insetEnd, current.left(), pageWidth, bodyFont);
         if (leftContinuationEnd > insetEnd) {
           reordered.add(current);
-          for (int continuationIndex = insetEnd; continuationIndex < leftContinuationEnd; continuationIndex++) {
+          for (int continuationIndex = insetEnd;
+              continuationIndex < leftContinuationEnd;
+              continuationIndex++) {
             reordered.add(lines.get(continuationIndex));
           }
           for (int insetIndex = insetStart; insetIndex < insetEnd; insetIndex++) {
@@ -895,7 +906,9 @@ final class PdfExtractionService {
   private static boolean isRightInsetLine(LineData line, double pageWidth, double bodyFont) {
     return line.left() > pageWidth * 0.45d
         && line.width() < pageWidth * 0.42d
-        && (isHeading(line, bodyFont) || line.boldFraction() >= 0.2d || line.width() < pageWidth * 0.3d);
+        && (isHeading(line, bodyFont)
+            || line.boldFraction() >= 0.2d
+            || line.width() < pageWidth * 0.3d);
   }
 
   private static int consumeRightInset(
@@ -1004,7 +1017,9 @@ final class PdfExtractionService {
   private static List<BlockData> orderBlocksByLayout(
       List<BlockData> blocks, PDRectangle pageBox, int depth) {
     if (blocks.size() <= 1 || depth >= 8) {
-      return blocks.stream().sorted(Comparator.comparingDouble(BlockData::top).thenComparingDouble(BlockData::left)).toList();
+      return blocks.stream()
+          .sorted(Comparator.comparingDouble(BlockData::top).thenComparingDouble(BlockData::left))
+          .toList();
     }
 
     BlockSplitCandidate vertical = findVerticalBlockSplit(blocks, pageBox.getWidth());
@@ -1028,7 +1043,8 @@ final class PdfExtractionService {
         .toList();
   }
 
-  private static BlockSplitCandidate findVerticalBlockSplit(List<BlockData> blocks, double pageWidth) {
+  private static BlockSplitCandidate findVerticalBlockSplit(
+      List<BlockData> blocks, double pageWidth) {
     List<BlockData> ordered =
         blocks.stream().sorted(Comparator.comparingDouble(BlockData::left)).toList();
     double[] prefixRight = new double[ordered.size()];
@@ -1369,7 +1385,8 @@ final class PdfExtractionService {
         height = Math.max(height, position.getHeightDir());
         fontSize = Math.max(fontSize, position.getFontSizeInPt());
         String fontName = position.getFont().getName();
-        if (fontName.contains("Bold") || fontName.contains("Semibold")) {
+        // Type 3 fonts may omit /Name; unknown style defaults to regular text.
+        if (fontName != null && (fontName.contains("Bold") || fontName.contains("Semibold"))) {
           bold = true;
         }
       }

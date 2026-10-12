@@ -41,7 +41,8 @@ final class MarkdownBundleService {
       Path relativePdfPath = inputDir.relativize(pdfFile);
       String relativeMarkdownPath = replaceExtension(normalizePath(relativePdfPath), ".md");
       PdfExtractionOptions options =
-          new PdfExtractionOptions(pdfFile, outputFile, PdfFileFormat.md, ocrMode, ocrLanguage, ocrDpi);
+          new PdfExtractionOptions(
+              pdfFile, outputFile, PdfFileFormat.md, ocrMode, ocrLanguage, ocrDpi);
       PdfExtractionService.RenderedDocument rendered = extractionService.render(options);
       long lastModifiedEpoch = Files.getLastModifiedTime(pdfFile).toMillis() / 1000L;
       String delimiter =
@@ -80,7 +81,8 @@ final class MarkdownBundleService {
       Path relativePath = Path.of(entry.relativePath());
       Path targetFile = outputDir.resolve(relativePath).normalize();
       if (!targetFile.startsWith(outputDir)) {
-        throw new IOException("Refusing to write outside output directory: " + entry.relativePath());
+        throw new IOException(
+            "Refusing to write outside output directory: " + entry.relativePath());
       }
       Path parent = targetFile.getParent();
       if (parent != null) {
@@ -99,7 +101,8 @@ final class MarkdownBundleService {
         new SimpleFileVisitor<>() {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-            if (attrs.isRegularFile() && file.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".pdf")) {
+            if (attrs.isRegularFile()
+                && file.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".pdf")) {
               pdfFiles.add(file);
             }
             return FileVisitResult.CONTINUE;
@@ -220,9 +223,11 @@ final class MarkdownBundleService {
   private static ParsedLine readLine(String rawContent, int startIndex) {
     int endIndex = rawContent.indexOf('\n', startIndex);
     if (endIndex < 0) {
-      return new ParsedLine(trimTrailingCarriageReturn(rawContent.substring(startIndex)), rawContent.length());
+      return new ParsedLine(
+          trimTrailingCarriageReturn(rawContent.substring(startIndex)), rawContent.length());
     }
-    return new ParsedLine(trimTrailingCarriageReturn(rawContent.substring(startIndex, endIndex)), endIndex + 1);
+    return new ParsedLine(
+        trimTrailingCarriageReturn(rawContent.substring(startIndex, endIndex)), endIndex + 1);
   }
 
   private static String trimTrailingCarriageReturn(String value) {
@@ -242,7 +247,8 @@ final class MarkdownBundleService {
     return value;
   }
 
-  private static DelimiterMatch findDelimiter(String rawContent, String delimiter, int contentStart) {
+  private static DelimiterMatch findDelimiter(
+      String rawContent, String delimiter, int contentStart) {
     String crlfToken = "\r\n" + delimiter;
     String lfToken = "\n" + delimiter;
 
@@ -259,12 +265,20 @@ final class MarkdownBundleService {
   }
 
   record BundleCombineOutcome(
-      Path outputFile, int inputFileCount, int totalPages, int totalOcrPages, boolean ocrAvailable) {}
+      Path outputFile,
+      int inputFileCount,
+      int totalPages,
+      int totalOcrPages,
+      boolean ocrAvailable) {}
 
   record BundleSplitOutcome(Path outputDir, int restoredFileCount) {}
 
   private record BundleEntry(
-      String relativePath, String source, long lastModifiedEpoch, String delimiter, String content) {}
+      String relativePath,
+      String source,
+      long lastModifiedEpoch,
+      String delimiter,
+      String content) {}
 
   private record ParsedLine(String value, int nextIndex) {}
 

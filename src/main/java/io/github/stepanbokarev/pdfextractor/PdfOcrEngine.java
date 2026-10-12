@@ -1,4 +1,5 @@
 package io.github.stepanbokarev.pdfextractor;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
@@ -40,9 +41,6 @@ final class PdfOcrEngine {
     if (lastFailure != null) {
       throw lastFailure;
     }
-    throw new IOException(
-        "No OCR backend is available for language expression '"
-            + language
-            + "'");
+    throw new IOException("No OCR backend is available for language expression '" + language + "'");
   }
 }

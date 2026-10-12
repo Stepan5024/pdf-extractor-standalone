@@ -3,7 +3,7 @@ setlocal
 
 set "SCRIPT_DIR=%~dp0"
 set "DIST_JAR_PATH=%SCRIPT_DIR%..\dist\pdf-extractor-standalone.jar"
-set "TARGET_JAR_PATH=%SCRIPT_DIR%..\target\pdf-extractor-standalone-3.0.1.jar"
+set "TARGET_JAR_PATH=%SCRIPT_DIR%..\target\pdf-extractor-standalone-3.0.2.jar"
 if defined M2_REPO (
   set "M2=%M2_REPO%"
 ) else (

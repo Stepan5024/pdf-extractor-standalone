@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.stepanbokarev</groupId>
     <artifactId>pdf-extractor-standalone</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
     <packaging>jar</packaging>
 
     <name>PDF Extractor Standalone</name>
@@ -16,13 +14,19 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.13.4</junit.version>
-        <assertj.version>3.27.6</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <pdfbox.version>2.0.35</pdfbox.version>
         <jai-imageio.version>1.4.0</jai-imageio.version>
         <tess4j.version>5.19.0</tess4j.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
         <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
+        <spotless-plugin.version>3.10.1</spotless-plugin.version>
+        <fmt-maven-plugin.version>2.29</fmt-maven-plugin.version>
+        <google-java-format.version>1.35.0</google-java-format.version>
+        <fmt.skip>false</fmt.skip>
+        <fmt.skipSourceDirectory>false</fmt.skipSourceDirectory>
+        <fmt.skipTestSourceDirectory>false</fmt.skipTestSourceDirectory>
     </properties>
 
     <dependencies>
@@ -30,6 +34,11 @@
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <version>${tess4j.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
@@ -40,11 +49,6 @@
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-jpeg2000</artifactId>
             <version>${jai-imageio.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sourceforge.tess4j</groupId>
-            <artifactId>tess4j</artifactId>
-            <version>${tess4j.version}</version>
         </dependency>
 
         <dependency>
@@ -64,12 +68,89 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources</directory>
                 <filtering>false</filtering>
+                <directory>src/main/resources</directory>
             </resource>
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless-plugin.version}</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <lineEndings>UNIX</lineEndings>
+                    <pom>
+                        <includes>
+                            <include>pom.xml</include>
+                        </includes>
+                        <sortPom>
+                            <expandEmptyElements>false</expandEmptyElements>
+                            <nrOfIndentSpace>4</nrOfIndentSpace>
+                            <sortDependencies/>
+                            <sortPlugins>groupId,artifactId</sortPlugins>
+                            <sortProperties>false</sortProperties>
+                            <sortModules>true</sortModules>
+                            <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+                        </sortPom>
+                    </pom>
+                    <formats>
+                        <format>
+                            <includes>
+                                <include>src/main/resources/**/*.sql</include>
+                                <include>src/test/resources/**/*.sql</include>
+                            </includes>
+                            <trimTrailingWhitespace/>
+                            <endWithNewline/>
+                            <indent>
+                                <spaces>true</spaces>
+                                <spacesPerTab>4</spacesPerTab>
+                            </indent>
+                        </format>
+                    </formats>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotless-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify.fmt</groupId>
+                <artifactId>fmt-maven-plugin</artifactId>
+                <version>${fmt-maven-plugin.version}</version>
+                <configuration>
+                    <skip>${fmt.skip}</skip>
+                    <skipSourceDirectory>${fmt.skipSourceDirectory}</skipSourceDirectory>
+                    <skipTestSourceDirectory>${fmt.skipTestSourceDirectory}</skipTestSourceDirectory>
+                    <failOnError>true</failOnError>
+                    <skipReflowingLongStrings>true</skipReflowingLongStrings>
+                    <skipRemovingUnusedImports>true</skipRemovingUnusedImports>
+                    <skipSortingImports>false</skipSortingImports>
+                    <style>google</style>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.google.googlejavaformat</groupId>
+                        <artifactId>google-java-format</artifactId>
+                        <version>${google-java-format.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>fmt-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -109,19 +190,45 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <!-- Shade replaces the main artifact, so rebuild its unshaded input. -->
+                            <forceCreation>true</forceCreation>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
                         <version>3.6.1</version>
                         <executions>
                             <execution>
-                                <phase>package</phase>
                                 <goals>
                                     <goal>shade</goal>
                                 </goals>
+                                <phase>package</phase>
                                 <configuration>
                                     <createDependencyReducedPom>false</createDependencyReducedPom>
                                     <transformers>
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>io.github.stepanbokarev.pdfextractor.PdfExtractorApplication</mainClass>
+                                        </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>META-INF/LICENSE</resource>
+                                        </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>META-INF/LICENSE.txt</resource>
+                                        </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>META-INF/NOTICE</resource>
+                                        </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>META-INF/NOTICE.txt</resource>
+                                        </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>META-INF/DEPENDENCIES</resource>
+                                        </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>versionchanges.txt</resource>
                                         </transformer>
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                     </transformers>
@@ -129,10 +236,13 @@
                                         <filter>
                                             <artifact>*:*</artifact>
                                             <excludes>
+                                                <exclude>META-INF/MANIFEST.MF</exclude>
                                                 <exclude>META-INF/*.SF</exclude>
                                                 <exclude>META-INF/*.DSA</exclude>
                                                 <exclude>META-INF/*.RSA</exclude>
                                                 <exclude>module-info.class</exclude>
+                                                <exclude>META-INF/versions/**/module-info.class</exclude>
+                                                <exclude>META-INF/versions/**/OSGI-INF/MANIFEST.MF</exclude>
                                             </excludes>
                                         </filter>
                                     </filters>

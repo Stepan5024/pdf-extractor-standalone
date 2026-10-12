@@ -34,7 +34,8 @@ public final class PdfExtractorApplication {
 
   int run(String[] args) {
     try {
-      ParsedCommand parsed = args.length == 0 ? promptInteractiveCommand() : ParsedCommand.parse(args);
+      ParsedCommand parsed =
+          args.length == 0 ? promptInteractiveCommand() : ParsedCommand.parse(args);
       if (parsed.showHelp()) {
         out.print(usage());
         return EXIT_SUCCESS;
@@ -63,10 +64,10 @@ public final class PdfExtractorApplication {
   static String usage() {
     return """
         Usage:
-          java -jar pdf-extractor-standalone-3.0.1.jar <input.pdf> [options]
-          java -jar pdf-extractor-standalone-3.0.1.jar extract <input.pdf> [options]
-          java -jar pdf-extractor-standalone-3.0.1.jar combine <input-dir> [options]
-          java -jar pdf-extractor-standalone-3.0.1.jar split <combined.md> [options]
+          java -jar pdf-extractor-standalone-3.0.2.jar <input.pdf> [options]
+          java -jar pdf-extractor-standalone-3.0.2.jar extract <input.pdf> [options]
+          java -jar pdf-extractor-standalone-3.0.2.jar combine <input-dir> [options]
+          java -jar pdf-extractor-standalone-3.0.2.jar split <combined.md> [options]
 
         Extract options:
           --output-file <path>    Write extracted content to this file
@@ -139,9 +140,7 @@ public final class PdfExtractorApplication {
     MarkdownBundleService.BundleSplitOutcome outcome =
         new MarkdownBundleService().splitBundle(command.bundleFile(), command.outputDir());
     out.printf(
-        "Restored %d markdown files into %s%n",
-        outcome.restoredFileCount(),
-        outcome.outputDir());
+        "Restored %d markdown files into %s%n", outcome.restoredFileCount(), outcome.outputDir());
     return EXIT_SUCCESS;
   }
 
@@ -519,7 +518,8 @@ public final class PdfExtractorApplication {
           options);
     }
 
-    private ParsedCommand withResolvedCombineOutput(Path resolvedInputDir, Path resolvedOutputFile) {
+    private ParsedCommand withResolvedCombineOutput(
+        Path resolvedInputDir, Path resolvedOutputFile) {
       return new ParsedCommand(
           mode,
           inputFile,

@@ -33,8 +33,25 @@
 
 ## Требования
 
-- Java 17+ для сборки и запуска
+- Java 17+ для запуска
+- JDK 25 для сборки и проверок форматирования (байткод совместим с Java 17)
 - Maven 3.9+ или `mvnw` / `mvnw.cmd`
+
+## Linux: запуск релиза v3.0.2
+
+Скачайте `pdf-extractor-standalone.jar` из GitHub Releases. Для запуска требуется Java 17+.
+Из папки с JAR выполните:
+
+```bash
+java -Djava.awt.headless=true -jar pdf-extractor-standalone.jar combine "$HOME/Загрузки/PDFS" --output-file "$HOME/Загрузки/PDFS/combined.md"
+```
+
+Режим `combine` обходит вложенные папки и сохраняет один Markdown bundle.
+Отсутствующее имя шрифта считается неизвестным обычным начертанием. Приложение
+сохраняет исходное сопоставление символов и не подменяет шрифт в PDF.
+Подстановку невстроенных шрифтов при отрисовке выполняет PDFBox; его резервный
+Liberation Sans включён в JAR. Отсутствующее Unicode-сопоставление отдельных
+символов — отдельная проблема: проверяйте текст результата для таких документов.
 
 ## Режимы запуска
 
@@ -148,7 +165,7 @@ mvnw.cmd package
 Результат:
 
 ```text
-target/pdf-extractor-standalone-3.0.1.jar
+target/pdf-extractor-standalone-3.0.2.jar
 ```
 
 Это thin jar. Его надо запускать через скрипты:
@@ -178,13 +195,13 @@ mvn -Pfat-jar package
 Результат:
 
 ```text
-target/pdf-extractor-standalone-3.0.1.jar
+target/pdf-extractor-standalone-3.0.2.jar
 ```
 
 После этого можно запускать его напрямую:
 
 ```bash
-java -jar target/pdf-extractor-standalone-3.0.1.jar /path/to/file.pdf --file-format md
+java -jar target/pdf-extractor-standalone-3.0.2.jar /path/to/file.pdf --file-format md
 ```
 
 ## Опции запуска
@@ -298,8 +315,6 @@ maven-shade-plugin ... 401 Unauthorized
 Что отдельно проверить в корпоративном репозитории:
 
 - `org.apache.pdfbox:pdfbox:2.0.35`
-- `com.github.jai-imageio:jai-imageio-core:1.4.0`
-- `com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0`
 - `net.sourceforge.tess4j:tess4j:5.19.0`
 - `net.sourceforge.lept4j:lept4j:1.24.0`
 - transitives для `tess4j`

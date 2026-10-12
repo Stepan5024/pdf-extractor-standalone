@@ -45,7 +45,9 @@ class Jpeg2000RenderingTest {
 
     try (PDDocument document = PDDocument.load(inputPdf.toFile())) {
       BufferedImage rendered = new PDFRenderer(document).renderImageWithDPI(0, 72);
-      int[] pixels = rendered.getRGB(0, 0, rendered.getWidth(), rendered.getHeight(), null, 0, rendered.getWidth());
+      int[] pixels =
+          rendered.getRGB(
+              0, 0, rendered.getWidth(), rendered.getHeight(), null, 0, rendered.getWidth());
       assertThat(Arrays.stream(pixels).distinct().count()).isGreaterThan(1);
     }
   }
