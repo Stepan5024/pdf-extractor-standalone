@@ -37,7 +37,7 @@
 - JDK 25 для сборки и проверок форматирования (байткод совместим с Java 17)
 - Maven 3.9+ или `mvnw` / `mvnw.cmd`
 
-## Linux: запуск релиза v3.0.2
+## Linux: запуск релиза v3.0.3
 
 Скачайте `pdf-extractor-standalone.jar` из GitHub Releases. Для запуска требуется Java 17+.
 Из папки с JAR выполните:
@@ -50,8 +50,17 @@ java -Djava.awt.headless=true -jar pdf-extractor-standalone.jar combine "$HOME/�
 Отсутствующее имя шрифта считается неизвестным обычным начертанием. Приложение
 сохраняет исходное сопоставление символов и не подменяет шрифт в PDF.
 Подстановку невстроенных шрифтов при отрисовке выполняет PDFBox; его резервный
-Liberation Sans включён в JAR. Отсутствующее Unicode-сопоставление отдельных
-символов — отдельная проблема: проверяйте текст результата для таких документов.
+Liberation Sans включён в JAR. При отсутствии Unicode-сопоставления режим `auto` распознаёт затронутую страницу
+через OCR, даже если на ней уже есть много извлечённого текста. Если OCR отключён,
+недоступен или вернул пустой текст, обработка завершается ошибкой вместо выдачи
+неполного результата. Для OCR на Debian/Ubuntu установите локальный Tesseract:
+
+```bash
+sudo apt-get install tesseract-ocr tesseract-ocr-rus
+```
+
+Модели `eng` и `rus` включены в JAR; Linux требует нативную библиотеку Tesseract.
+Точное восстановление на плохо читаемых страницах зависит от качества OCR.
 
 ## Режимы запуска
 
@@ -165,7 +174,7 @@ mvnw.cmd package
 Результат:
 
 ```text
-target/pdf-extractor-standalone-3.0.2.jar
+target/pdf-extractor-standalone-3.0.3.jar
 ```
 
 Это thin jar. Его надо запускать через скрипты:
@@ -195,13 +204,13 @@ mvn -Pfat-jar package
 Результат:
 
 ```text
-target/pdf-extractor-standalone-3.0.2.jar
+target/pdf-extractor-standalone-3.0.3.jar
 ```
 
 После этого можно запускать его напрямую:
 
 ```bash
-java -jar target/pdf-extractor-standalone-3.0.2.jar /path/to/file.pdf --file-format md
+java -jar target/pdf-extractor-standalone-3.0.3.jar /path/to/file.pdf --file-format md
 ```
 
 ## Опции запуска
@@ -261,7 +270,7 @@ java -jar dist/pdf-extractor-standalone.jar split /path/to/combined.md --output-
 
 ## Поведение OCR
 
-- `eng` и `rus` работают без системного `tesseract`
+- модели `eng` и `rus` включены в JAR; для OCR на Linux требуется нативная библиотека Tesseract
 - облачные вызовы не используются
 - во время выполнения программы зависимости не скачиваются
 - для языков вне `eng`/`rus` нужен установленный `tesseract`

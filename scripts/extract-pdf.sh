@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_JAR_PATH="$SCRIPT_DIR/../dist/pdf-extractor-standalone.jar"
-TARGET_JAR_PATH="$SCRIPT_DIR/../target/pdf-extractor-standalone-3.0.2.jar"
+TARGET_JAR_PATH="$SCRIPT_DIR/../target/pdf-extractor-standalone-3.0.3.jar"
 M2_REPO="${M2_REPO:-$HOME/.m2/repository}"
 
 if [[ -f "$DIST_JAR_PATH" ]]; then

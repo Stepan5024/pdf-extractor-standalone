@@ -4,7 +4,7 @@
 
     <groupId>io.github.stepanbokarev</groupId>
     <artifactId>pdf-extractor-standalone</artifactId>
-    <version>3.0.2</version>
+    <version>3.0.3</version>
     <packaging>jar</packaging>
 
     <name>PDF Extractor Standalone</name>

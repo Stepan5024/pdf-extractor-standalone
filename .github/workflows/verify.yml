@@ -18,6 +18,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
+      - name: Install local OCR runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y tesseract-ocr tesseract-ocr-rus
+      - name: Confirm downloadable artifact is tracked in release source
+        run: |
+          git ls-files --error-unmatch dist/pdf-extractor-standalone.jar
+          sha256sum dist/pdf-extractor-standalone.jar
       - name: Compile, format checks and regression tests
         run: |
           mkdir -p target/test-tmp
@@ -29,6 +37,6 @@ jobs:
       - name: Run tests on Java 17
         run: mvn --batch-mode surefire:test -Djava.io.tmpdir="$PWD/target/test-tmp"
       - name: Smoke-test Linux build on Java 17
-        run: bash scripts/smoke-test.sh "$PWD/target/pdf-extractor-standalone-3.0.2.jar"
+        run: bash scripts/smoke-test.sh "$PWD/target/pdf-extractor-standalone-3.0.3.jar"
       - name: Smoke-test downloadable JAR on Java 17
         run: bash scripts/smoke-test.sh "$PWD/dist/pdf-extractor-standalone.jar"

@@ -64,10 +64,10 @@ public final class PdfExtractorApplication {
   static String usage() {
     return """
         Usage:
-          java -jar pdf-extractor-standalone-3.0.2.jar <input.pdf> [options]
-          java -jar pdf-extractor-standalone-3.0.2.jar extract <input.pdf> [options]
-          java -jar pdf-extractor-standalone-3.0.2.jar combine <input-dir> [options]
-          java -jar pdf-extractor-standalone-3.0.2.jar split <combined.md> [options]
+          java -jar pdf-extractor-standalone-3.0.3.jar <input.pdf> [options]
+          java -jar pdf-extractor-standalone-3.0.3.jar extract <input.pdf> [options]
+          java -jar pdf-extractor-standalone-3.0.3.jar combine <input-dir> [options]
+          java -jar pdf-extractor-standalone-3.0.3.jar split <combined.md> [options]
 
         Extract options:
           --output-file <path>    Write extracted content to this file

@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootDir = Split-Path -Parent $scriptDir
 $distJarPath = Join-Path $rootDir 'dist/pdf-extractor-standalone.jar'
-$targetJarPath = Join-Path $rootDir 'target/pdf-extractor-standalone-3.0.2.jar'
+$targetJarPath = Join-Path $rootDir 'target/pdf-extractor-standalone-3.0.3.jar'
 
 if ($env:M2_REPO) {
     $m2 = $env:M2_REPO

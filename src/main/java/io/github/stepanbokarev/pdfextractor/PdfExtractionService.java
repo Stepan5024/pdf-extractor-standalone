@@ -2,6 +2,7 @@ package io.github.stepanbokarev.pdfextractor;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import java.util.regex.Pattern;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -21,6 +24,8 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
+import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.util.Vector;
 
 /** Converts PDF documents into readable Markdown or TXT. */
 final class PdfExtractionService {
@@ -81,9 +86,28 @@ final class PdfExtractionService {
     PDPage page = document.getPage(pageIndex);
     FragmentCollectingStripper stripper = new FragmentCollectingStripper();
     List<TextFragment> fragments = stripper.extractPage(document, pageNumber);
+    int unmappedGlyphs = stripper.unmappedGlyphs;
     Map<TextFragment, String> links = resolveLinks(page, fragments);
     List<LineData> lines = buildReadingOrder(page, fragments, links);
 
+    if (unmappedGlyphs > 0 && options.ocrMode() == OcrMode.off) {
+      throw new IOException(
+          "Page "
+              + pageNumber
+              + " contains "
+              + unmappedGlyphs
+              + " glyph(s) without a Unicode mapping. OCR is required; use --ocr-mode auto.");
+    }
+    if (unmappedGlyphs > 0 && !ocrEngine.canOcr(options.ocrLanguage())) {
+      throw new IOException(
+          "Page "
+              + pageNumber
+              + " contains "
+              + unmappedGlyphs
+              + " glyph(s) without a Unicode mapping. No local OCR backend can serve '"
+              + options.ocrLanguage()
+              + "'. Install Tesseract with the required language data.");
+    }
     if (options.ocrMode() == OcrMode.always && !ocrEngine.canOcr(options.ocrLanguage())) {
       throw new IOException(
           "OCR mode 'always' was requested but no local OCR backend can serve language expression '"
@@ -91,11 +115,32 @@ final class PdfExtractionService {
               + "'");
     }
 
-    if (shouldUseOcr(lines, options.ocrMode()) && ocrEngine.canOcr(options.ocrLanguage())) {
-      BufferedImage image = renderer.renderImageWithDPI(pageIndex, options.ocrDpi());
-      String ocrText = normalizeOcr(ocrEngine.ocr(image, options.ocrLanguage()));
+    if (shouldUseOcr(lines, options.ocrMode(), unmappedGlyphs)
+        && ocrEngine.canOcr(options.ocrLanguage())) {
+      String ocrText;
+      try {
+        BufferedImage image = renderer.renderImageWithDPI(pageIndex, options.ocrDpi());
+        ocrText = normalizeOcr(ocrEngine.ocr(image, options.ocrLanguage()));
+      } catch (IOException exception) {
+        if (unmappedGlyphs > 0) {
+          throw new IOException(
+              "Page "
+                  + pageNumber
+                  + " has missing Unicode mappings; OCR recovery failed: "
+                  + exception.getMessage(),
+              exception);
+        }
+        throw exception;
+      }
       if (!ocrText.isBlank()) {
         return new PageRenderResult(renderOcrPage(pageNumber, ocrText, options.fileFormat()), true);
+      }
+      if (unmappedGlyphs > 0) {
+        throw new IOException(
+            "Page "
+                + pageNumber
+                + " has missing Unicode mappings and OCR returned no text; refusing incomplete"
+                + " extraction.");
       }
     }
 
@@ -103,7 +148,7 @@ final class PdfExtractionService {
         renderNativePage(pageNumber, lines, page.getMediaBox(), options.fileFormat()), false);
   }
 
-  private static boolean shouldUseOcr(List<LineData> lines, OcrMode ocrMode) {
+  private static boolean shouldUseOcr(List<LineData> lines, OcrMode ocrMode, int unmappedGlyphs) {
     if (ocrMode == OcrMode.off) {
       return false;
     }
@@ -115,7 +160,7 @@ final class PdfExtractionService {
             .map(LineData::plainText)
             .reduce("", (left, right) -> left + " " + right)
             .trim();
-    return nativeText.length() < 80;
+    return unmappedGlyphs > 0 || nativeText.length() < 80;
   }
 
   private static String renderOcrPage(int pageNumber, String text, PdfFileFormat fileFormat) {
@@ -1331,18 +1376,39 @@ final class PdfExtractionService {
   private static final class FragmentCollectingStripper extends PDFTextStripper {
 
     private final List<TextFragment> fragments = new ArrayList<>();
+    private final GlyphList unicodeGlyphs;
+    private int unmappedGlyphs;
 
     private FragmentCollectingStripper() throws IOException {
+      // Match PDFBox's extended glyph list before declaring a mapping unrecoverable.
+      try (InputStream additional =
+          GlyphList.class.getResourceAsStream(
+              "/org/apache/pdfbox/resources/glyphlist/additional.txt")) {
+        if (additional == null) {
+          throw new IOException("PDFBox's additional Unicode glyph list is missing from the JAR");
+        }
+        unicodeGlyphs = new GlyphList(GlyphList.getAdobeGlyphList(), additional);
+      }
       setSortByPosition(true);
       setAddMoreFormatting(true);
     }
 
     private List<TextFragment> extractPage(PDDocument document, int pageNumber) throws IOException {
       fragments.clear();
+      unmappedGlyphs = 0;
       setStartPage(pageNumber);
       setEndPage(pageNumber);
       getText(document);
       return List.copyOf(fragments);
+    }
+
+    @Override
+    protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, Vector displacement)
+        throws IOException {
+      if (font.toUnicode(code, unicodeGlyphs) == null) {
+        unmappedGlyphs++;
+      }
+      super.showGlyph(textRenderingMatrix, font, code, displacement);
     }
 
     @Override

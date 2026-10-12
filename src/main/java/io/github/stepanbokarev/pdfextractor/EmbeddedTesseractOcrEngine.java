@@ -68,6 +68,11 @@ final class EmbeddedTesseractOcrEngine implements OcrEngine {
       try (PrintStream quietErr = new PrintStream(interceptedErr, true, StandardCharsets.UTF_8)) {
         System.setErr(quietErr);
         return tesseract.doOCR(image);
+      } catch (UnsatisfiedLinkError exception) {
+        throw new IOException(
+            "Native Tesseract library is unavailable. Install Tesseract on this system to enable"
+                + " OCR.",
+            exception);
       } catch (TesseractException exception) {
         String nativeError = interceptedErr.toString(StandardCharsets.UTF_8).trim();
         String detail = exception.getMessage();
